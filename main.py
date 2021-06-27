@@ -2,16 +2,50 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-ohlc_data = pd.read_csv('nifty-50\SBIN.csv',index_col=0 , parse_dates=True)
+ohlc_data = pd.read_csv('nifty-50\SBIN.csv', index_col=0, parse_dates=True)
 
 daily = np.array(ohlc_data)
 
-money = 10000
-bull = 0
-bear = 0
+money = int(input('Enter amount you want to invest : '))
+risk = int(input('Enter no of shares you want to buy/sell in each transaction : '))
 
-def ohlc_plot(Data, window, name):
-    Chosen = Data[-window:, ]
+def doji_detection(data, cash, risk):
+    initial_amount = cash
+    transactions = 0
+    stocks = 0
+    for i in range(len(data)):
+
+        invest = stocks * data[i, 3]
+
+        # Bullish Doji
+        if abs(data[i, 3] - data[i, 0]) < 5 and data[i, 3] < data[i - 1, 3] and cash >= 5 * data[i, 3] and risk * data[i, 3] < cash:
+            # Buying shares at close
+            cash -= risk * data[i, 3]
+            invest += risk * data[i, 3]
+            stocks += risk
+            print('\n', i, ') BULL: Bought ', risk, ' at ', data[i, 3], '|| Cash Left = ', cash, '|| Invested = ', invest)
+            transactions += 1
+
+        # Bearish Doji
+        if abs(data[i, 3] - data[i, 0]) < 5 and data[i, 3] > data[i - 1, 3] and transactions > 0 and stocks > 0:
+            # Selling shares at closing
+            cash += risk * data[i, 3]
+            invest -= risk * data[i, 3]
+            stocks -= risk
+            print('\n', i, ') BEAR: Sold ', risk, ' at ', data[i, 3], '|| Cash Left = ', cash, '|| Invested = ', invest)
+            transactions += 1
+        if i == 79:
+            gross = data[i, 3] * stocks + cash
+            print("\n\n\n\tTotal Amount   : Rs. ", gross)
+            print("\tInitial Amount : Rs. ", initial_amount)
+            print("\tProfit / Loss  : Rs. ", gross - initial_amount)
+    print('\n\tThanks for using Trading Bot !!!')
+
+
+
+"""
+def ohlc_plot(data, window, name):
+    Chosen = data[-window:, ]
 
     for i in range(len(Chosen)):
 
@@ -31,23 +65,9 @@ def ohlc_plot(Data, window, name):
     plt.grid()
     plt.title('SBIN (2000-21)')
     plt.show()
-
-
-def signal(Data):
-
-    for i in range(len(Data)):
-
-        # Bullish Doji
-        if abs(Data[i, 3] - Data[i, 0])<5 and Data[i, 3] < Data[i - 1, 3] and Data[i, 3] < Data[i - 2, 3]:
-            #Data[i, 6] = 1
-            print('Bullish Doji at ', i)
-
-            # Bearish Doji
-        if abs(Data[i, 3] - Data[i, 0])<5 and Data[i, 3] > Data[i - 1, 3] and Data[i, 3] > Data[i - 2, 3]:
-            #Data[i, 7] = -1
-            print('Bearish Doji at ', i)
-
+"""
 
 # Using the function
-signal(daily)
-ohlc_plot(daily, 50, '')
+list = doji_detection(daily, money, risk)
+# print(list)
+# ohlc_plot(daily, 40, '')
